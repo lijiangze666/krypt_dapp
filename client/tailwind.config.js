@@ -4,7 +4,7 @@ module.exports = {
     "./public/index.html"
   ],
   mode: "jit",
-  darkMode: false, // or 'media' or 'class'
+  // darkMode: false, // or 'media' or 'class'
   theme: {
     fontFamily: {
       display: ["Open Sans", "sans-serif"],
