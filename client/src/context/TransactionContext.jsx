@@ -23,8 +23,11 @@ const getEthereumContract = async () => {
 }
 
 export const TransactionProvider = ({children}) => {
+    const provider = new ethers.BrowserProvider(ethereum);
     //当前账号
     const [currentAccount, setCurrentAccount] = useState('');
+    //当前账户余额
+    const [balance, setBalance] = useState('');
     //input内容
     const [formData, setFormData] = useState({
         addressTo: '',
@@ -53,6 +56,9 @@ export const TransactionProvider = ({children}) => {
             if (accounts.length) {
                 //有账号，将账号设置为当前账号
                 setCurrentAccount(accounts[0]);
+                //当前账户余额
+                const balance = await provider.getBalance(accounts[0]);
+                setBalance((+ethers.formatEther(balance)).toFixed(4));
             } else {
                 console.log("No accounts found.");
             }
@@ -69,6 +75,10 @@ export const TransactionProvider = ({children}) => {
             //链接钱包账户
             const accounts = await ethereum.request({method: "eth_requestAccounts"});
             setCurrentAccount(accounts[0]);
+            //当前账户余额
+            const balance = await provider.getBalance(accounts[0]);
+            //截取小数点后四位
+            setBalance((+ethers.formatEther(balance)).toFixed(4));
         } catch (error) {
             console.log(error);
             throw new Error("No ethereum object.");
@@ -81,9 +91,9 @@ export const TransactionProvider = ({children}) => {
             //input内容
             const {addressTo, amount, keyword, message} = formData;
             //获取合约对象
-            const transactionContract= await getEthereumContract()
+            const transactionContract = await getEthereumContract()
             //转换为wei
-            const  parsedAmount = ethers.parseEther(amount);
+            const parsedAmount = ethers.parseEther(amount);
             //发送交易（matemask）
             await ethereum.request({
                 method: "eth_sendTransaction",
@@ -119,7 +129,8 @@ export const TransactionProvider = ({children}) => {
     }, [])
     return (
         //返回上下文
-        <TransactionContext.Provider value={{connectWallet,currentAccount,formData,handleChange,sendTransaction}}>
+        <TransactionContext.Provider
+            value={{connectWallet, currentAccount, formData, handleChange, sendTransaction, balance}}>
             {children}
         </TransactionContext.Provider>
     )
