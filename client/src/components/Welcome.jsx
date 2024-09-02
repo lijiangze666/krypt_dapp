@@ -14,7 +14,7 @@ const Input = ({placeholder, name, type, value, handleChange}) => (
            className='my-2 w-full rounded-sm p-2 outline-none bg-transparent text-white border-none text-sm white-glassmorphism'/>
 );
 const Welcome = () => {
-    const {connectWallet, currentAccount, formData, setFormData, handleChange, sendTransaction,balance} = useContext(TransactionContext);
+    const {connectWallet, currentAccount, formData, setFormData, handleChange, sendTransaction,balance,isLoading} = useContext(TransactionContext);
 
     //交易
     const handleSubmit = (e) => {
@@ -90,7 +90,7 @@ const Welcome = () => {
                         <Input placeholder="Enter Message" name="message" type="text" handleChange={handleChange}/>
 
                         <div className="h-[1px] w-full bg-gray-400 my-2"/>
-                        {false
+                        {isLoading
                             ? <Loader/>
                             : (
                                 <button

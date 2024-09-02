@@ -26,6 +26,7 @@ export const TransactionProvider = ({children}) => {
     const provider = new ethers.BrowserProvider(ethereum);
     //当前账号
     const [currentAccount, setCurrentAccount] = useState('');
+    const [transactions, setTransactions] = useState([]);
     //当前账户余额
     const [balance, setBalance] = useState('');
     //input内容
@@ -46,6 +47,25 @@ export const TransactionProvider = ({children}) => {
             [name]: e.target.value
         }))
     }
+    const getAllTransactions = async () => {
+        try {
+            if (!ethereum) return alert("Please install MetaMask.");
+            const transactionContract = await getEthereumContract();
+            const availableTransactions = await transactionContract.getAllTransactions();
+            const structuredTransactions = availableTransactions.map((transaction) => ({
+                addressTo: transaction.receiver,
+                addressFrom: transaction.sender,
+                timestamp: new Date(parseInt(transaction.timestamp) * 1000).toLocaleString(),
+                message: transaction.message,
+                keyword: transaction.keyword,
+                amount: parseInt(transaction.amount) / (10 ** 18)
+            }));
+            console.log(structuredTransactions);
+            setTransactions(structuredTransactions);
+        } catch (error) {
+            console.log(error);
+        }
+    }
     //检查是否安装了matemask，如果没有就提示安装。
     const checkIfWalletIsConnected = async () => {
         try {
@@ -56,6 +76,7 @@ export const TransactionProvider = ({children}) => {
             if (accounts.length) {
                 //有账号，将账号设置为当前账号
                 setCurrentAccount(accounts[0]);
+                getAllTransactions();
                 //当前账户余额
                 const balance = await provider.getBalance(accounts[0]);
                 setBalance((+ethers.formatEther(balance)).toFixed(4));
@@ -67,6 +88,17 @@ export const TransactionProvider = ({children}) => {
             throw new Error("No ethereum object.");
         }
 
+    }
+    //检查交易数量
+    const checkIfTransactionsExists = async () => {
+        try {
+            const transactionContract = await getEthereumContract();
+            const transactionCount = await transactionContract.getTransactionCount();
+            window.localStorage.setItem("transactionCount", transactionCount);
+        } catch (error) {
+            console.log(error);
+            throw new Error("No ethereum object.");
+        }
     }
     //链接钱包方法
     const connectWallet = async () => {
@@ -117,6 +149,7 @@ export const TransactionProvider = ({children}) => {
             const transactionCount = await transactionContract.getTransactionCount();
 
             setTransactionCount(transactionCount);
+            window.location.reload();
 
         } catch (error) {
             console.log(error);
@@ -126,11 +159,12 @@ export const TransactionProvider = ({children}) => {
     //初始化
     useEffect(() => {
         checkIfWalletIsConnected()
+        checkIfTransactionsExists()
     }, [])
     return (
         //返回上下文
         <TransactionContext.Provider
-            value={{connectWallet, currentAccount, formData, handleChange, sendTransaction, balance}}>
+            value={{connectWallet,transactions, currentAccount, formData, handleChange, sendTransaction, balance,isLoading}}>
             {children}
         </TransactionContext.Provider>
     )
