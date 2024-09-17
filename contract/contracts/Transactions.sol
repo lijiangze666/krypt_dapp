@@ -2,7 +2,7 @@
 pragma solidity ^0.8.17;
 
 contract Transactions {
-
+    //交易数
     uint256 transactionCount;
 
     event Transfer(address from, address receiver, uint256 amount, string message, uint256 timestamp, string keyword);
